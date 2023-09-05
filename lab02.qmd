@@ -1,0 +1,143 @@
+---
+title: "Lab02"
+author: "Anu"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+setwd("C:/Users/Anu/Documents/R for biodata")
+target_url <- "https://github.com/ramhiser/datamicroarray/raw/master/data/gravier.RData"
+output_file <- "gravier.RData"
+curl::curl_download(url = target_url,
+                    destfile = output_file)
+```
+
+```{r}
+#| echo: true
+  #| eval: true
+  # Here goes the code... Note how this part does not get executed because of the initial hashtag, this is called a code-comment
+  1 + 1
+  my_vector <- c(1, 2, 3)
+  my_mean <- mean(my_vector)
+```
+
+```{r}
+load("gravier.Rdata")
+```
+
+`{print(my_mean)}`
+
+```{r}
+library("tidyverse")
+set.seed(676571)
+cancer_data=mutate(as_tibble(pluck(gravier,"x")),y=pluck(gravier,"y"),pt_id=1:length(pluck(gravier, "y")),age=round(rnorm(length(pluck(gravier,"y")),mean=55,sd=10),1))
+cancer_data=rename(cancer_data,event_label=y)
+cancer_data$age_group=cut(cancer_data$age,breaks=seq(10,100,by=10))
+cancer_data=relocate(cancer_data,c(pt_id,age,age_group,pt_id,event_label))
+```
+
+```{r}
+ggplot(data = tibble(x = rnorm(20),
+                     y = rnorm(20)),
+       mapping = aes(x = x,
+                     y = y)) +
+  geom_point()
+```
+
+```{r}
+ggplot(data = cancer_data,
+       mapping = aes(x = g2E09,
+                     y = age)) +
+  geom_point() +
+  labs()
+```
+
+```{r}
+ggplot(data=cancer_data, aes(x=g2E09, y=age, group=1)) +
+  geom_line()
+```
+
+```{r}
+ggplot(data=cancer_data, mapping=aes(x=g2E09))+geom_boxplot()
+```
+
+```{r}
+ggplot(cancer_data, aes(x=g2E09)) + geom_histogram()
+```
+
+```{r}
+ggplot(cancer_data, aes(x=g2E09)) + 
+  geom_density()
+```
+
+```{r}
+ggplot(data=cancer_data, mapping=aes(y=g2E09, x=event_label))+geom_boxplot()
+```
+
+```{r}
+ggplot(cancer_data, aes(x=g2E09,fill=event_label)) + 
+  geom_density(alpha=0.6) + labs(y="Density", title= "g2E09 density graph stratified on events", fill="Event label")
+```
+
+```{r}
+ggplot(data=cancer_data, mapping=aes(x=g2E09, y=age_group, fill=event_label))+geom_boxplot(alpha=0.5)+labs(y="Age group", title="g2E09 vs Age group depending on events", fill="Event label")
+```
+
+```{r}
+ggplot(data = cancer_data,
+       mapping = aes(x = g2E09,
+                     y = age, color=event_label)) +
+  geom_point() + geom_smooth(alpha=0.2)+
+  labs(color="Event label", title="g2E09 vs age depending on event")
+  
+```
+
+```{r}
+ggplot(data = cancer_data,
+       mapping = aes(x = g2E09,
+                     y = g1A01, color=event_label)) +
+  geom_point() + 
+  geom_smooth(alpha=0.2, se= FALSE) + 
+  facet_wrap(vars(age_group))+
+  labs(title="Genes plotted against each other in different age groups according to their corresponding events", color="Event label")
+```
+
+```{r}
+ggplot(data=cancer_data, mapping=aes(x=g1CNS507, y=event_label, fill=event_label))+
+  geom_boxplot(alpha=0.5, show.legend = FALSE)+
+  labs(y="Event after Diagnosis",x="Expression level of g1CNS507 (log2 transformed)", title="A progonistic DNA signature for T1T2 node negatice breast cancer patients", subtitle = "Labelling: good= no event, poor= early metastasis", fill="Event label")
+```
+
+```{r}
+ggplot(data = cancer_data,
+       mapping = aes(x = age,
+                     y = g1int239, color=event_label)) +
+  geom_point(show.legend = FALSE) + 
+  geom_point(shape=1, size=1.5,color="black")+
+  geom_smooth(method=lm,se=FALSE,fill=NA)+
+  labs( title="A progonistic DNA signature for T1T2 node negatice breast cancer patients", subtitle = "Stratified on labelling: good= no event, poor= early metastasis", x="Subject Age", y="Expression level of g1int239(log2transformed)",color="Label")+
+  theme(legend.position = "bottom")
+  
+```
